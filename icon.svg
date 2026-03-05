@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="#0078D4"/>
+
+  <!-- Document shape -->
+  <path d="M80 40 L160 40 L190 70 L190 200 C190 206 185 211 179 211 L80 211 C74 211 69 206 69 200 L69 51 C69 45 74 40 80 40 Z" fill="white" opacity="0.95"/>
+
+  <!-- Document fold -->
+  <path d="M160 40 L160 70 L190 70 Z" fill="#B4D6F0"/>
+
+  <!-- Document lines -->
+  <rect x="90" y="90" width="80" height="8" rx="4" fill="#0078D4" opacity="0.3"/>
+  <rect x="90" y="110" width="60" height="8" rx="4" fill="#0078D4" opacity="0.3"/>
+  <rect x="90" y="130" width="70" height="8" rx="4" fill="#0078D4" opacity="0.3"/>
+
+  <!-- Broom/sweep icon (overlay, bottom-right) -->
+  <g transform="translate(150, 145)">
+    <!-- Broom handle -->
+    <rect x="38" y="-10" width="8" height="55" rx="4" fill="#FFB900" transform="rotate(35, 42, 18)"/>
+    <!-- Broom head -->
+    <path d="M10 62 L22 42 L50 62 L55 78 C55 85 10 85 10 78 Z" fill="#FFB900" transform="rotate(0)"/>
+    <!-- Broom bristles -->
+    <line x1="18" y1="68" x2="15" y2="82" stroke="#E68A00" stroke-width="2"/>
+    <line x1="25" y1="68" x2="23" y2="82" stroke="#E68A00" stroke-width="2"/>
+    <line x1="32" y1="68" x2="31" y2="82" stroke="#E68A00" stroke-width="2"/>
+    <line x1="39" y1="68" x2="39" y2="82" stroke="#E68A00" stroke-width="2"/>
+    <line x1="46" y1="68" x2="47" y2="82" stroke="#E68A00" stroke-width="2"/>
+  </g>
+
+  <!-- Sparkle effects (clean!) -->
+  <g fill="#FFB900">
+    <polygon points="45,75 48,68 51,75 58,78 51,81 48,88 45,81 38,78" transform="scale(0.7) translate(20,20)"/>
+    <polygon points="45,75 48,68 51,75 58,78 51,81 48,88 45,81 38,78" transform="scale(0.5) translate(340,60)"/>
+  </g>
+</svg>

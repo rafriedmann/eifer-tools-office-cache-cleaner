@@ -1,0 +1,6 @@
+# Build output
+output/
+source/
+
+# Tools
+tools/
