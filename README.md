@@ -1,11 +1,15 @@
+<p align="center">
+  <img src="icon.svg" alt="Office Cache Cleaner" width="128">
+</p>
+
 # Office Cache Cleaner
 
-PowerShell-Script zur Bereinigung des Microsoft 365 Office-Caches. Loest Probleme mit angepinnten Dokumenten in Word, Excel, Explorer etc.
+PowerShell script to clear the Microsoft 365 Office cache. Fixes issues with pinning documents in Word, Excel, Explorer, etc.
 
-## Was wird bereinigt?
+## What gets cleaned?
 
-| Bereich | Pfad / Ort |
-|---------|-----------|
+| Area | Path / Location |
+|------|----------------|
 | Office Recent Files | `%APPDATA%\Microsoft\Office\Recent\` |
 | Office File Cache | `%LOCALAPPDATA%\Microsoft\Office\16.0\OfficeFileCache\` |
 | Office Upload Center | `%LOCALAPPDATA%\Microsoft\Office\16.0\OfficeUploadCenter\` |
@@ -15,41 +19,41 @@ PowerShell-Script zur Bereinigung des Microsoft 365 Office-Caches. Loest Problem
 | Registry User MRU | `HKCU:\Software\Microsoft\Office\16.0\<App>\User MRU` |
 | Registry Roaming | `HKCU:\Software\Microsoft\Office\16.0\Common\Roaming` |
 
-**Hinweis:** Das Script schliesst laufende Office-Apps automatisch vor der Bereinigung.
+**Note:** The script automatically closes running Office apps before cleaning.
 
-## Manuell ausfuehren
+## Manual execution
 
 ```powershell
 powershell.exe -ExecutionPolicy Bypass -File Clear-OfficeCache.ps1
 ```
 
-## Intune Deployment (Win32-App)
+## Intune Deployment (Win32 App)
 
-### 1. .intunewin Paket erstellen
+### 1. Create .intunewin package
 
-Das [Microsoft Win32 Content Prep Tool](https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool) verwenden:
+Use the [Microsoft Win32 Content Prep Tool](https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool):
 
 ```cmd
 IntuneWinAppUtil.exe -c .\  -s Clear-OfficeCache.ps1 -o .\output
 ```
 
-### 2. In Intune konfigurieren
+### 2. Configure in Intune
 
-| Einstellung | Wert |
-|------------|------|
+| Setting | Value |
+|---------|-------|
 | **Install command** | `powershell.exe -ExecutionPolicy Bypass -File Clear-OfficeCache.ps1` |
 | **Uninstall command** | `powershell.exe -ExecutionPolicy Bypass -File Uninstall-OfficeCache.ps1` |
 | **Install behavior** | User |
 | **Detection rule** | Registry: `HKCU\SOFTWARE\EIFER\OfficeCacheCleaner`, Value: `Version`, String equals `1.0` |
 
-### 3. Zuweisung
+### 3. Assignment
 
-- Als **Required** dem betroffenen Benutzer oder einer Geraetegruppe zuweisen
-- Oder als **Available** im Company Portal bereitstellen (Mitarbeiter kann es bei Bedarf selbst ausfuehren)
+- Assign as **Required** to affected users or device groups
+- Or publish as **Available** in the Company Portal for self-service
 
 ## Logs
 
-Logdateien werden geschrieben nach:
+Log files are written to:
 
 ```
 %LOCALAPPDATA%\EIFER\Logs\Clear-OfficeCache_<timestamp>.log

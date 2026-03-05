@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    Bereinigt den Microsoft 365 Office-Cache um Probleme mit angepinnten Dokumenten zu beheben.
+    Clears the Microsoft 365 Office cache to fix issues with pinned documents.
 
 .DESCRIPTION
-    Loescht Office MRU-Cache, Jump Lists und relevante Registry-Eintraege.
-    Gedacht fuer Intune Win32-App Deployment im User-Kontext.
+    Deletes Office MRU cache, Jump Lists, and relevant registry entries.
+    Designed for Intune Win32 app deployment in user context.
 
 .NOTES
     EIFER IT-Tools
-    Erfordert: PowerShell 5.1+, Ausfuehrung im User-Kontext
+    Requires: PowerShell 5.1+, user context execution
 #>
 
 [CmdletBinding()]
@@ -16,7 +16,7 @@ param()
 
 $ErrorActionPreference = "Continue"
 
-# --- Toast-Notification Funktion ---
+# --- Toast Notification ---
 function Show-Toast {
     param(
         [string]$Title,
@@ -41,7 +41,7 @@ function Show-Toast {
         $Toast = [Windows.UI.Notifications.ToastNotification]::new($Xml)
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("EIFER IT-Tools").Show($Toast)
     } catch {
-        Write-Log "Toast-Notification konnte nicht angezeigt werden: $_"
+        Write-Log "Failed to show toast notification: $_"
     }
 }
 
@@ -57,34 +57,34 @@ function Write-Log {
     Write-Host $Entry
 }
 
-Write-Log "=== Office Cache Cleaner gestartet ==="
-Write-Log "Benutzer: $env:USERNAME | Computer: $env:COMPUTERNAME"
+Write-Log "=== Office Cache Cleaner started ==="
+Write-Log "User: $env:USERNAME | Computer: $env:COMPUTERNAME"
 
-# --- Office-Prozesse pruefen und beenden ---
+# --- Close Office processes ---
 $OfficeProcesses = @("WINWORD", "EXCEL", "POWERPNT", "OUTLOOK", "ONENOTE", "MSACCESS", "MSPUB")
 $RunningOffice = Get-Process -Name $OfficeProcesses -ErrorAction SilentlyContinue
 
 if ($RunningOffice) {
-    Write-Log "Offene Office-Apps gefunden: $($RunningOffice.Name -join ', '). Versuche zu schliessen..."
+    Write-Log "Running Office apps found: $($RunningOffice.Name -join ', '). Attempting to close..."
     foreach ($proc in $RunningOffice) {
         try {
             $proc.CloseMainWindow() | Out-Null
         } catch {
-            Write-Log "WARNUNG: Konnte $($proc.Name) nicht ueber MainWindow schliessen."
+            Write-Log "WARNING: Could not close $($proc.Name) via MainWindow."
         }
     }
     Start-Sleep -Seconds 5
 
-    # Noch laufende Prozesse hart beenden
+    # Force-kill remaining processes
     $StillRunning = Get-Process -Name $OfficeProcesses -ErrorAction SilentlyContinue
     if ($StillRunning) {
-        Write-Log "Erzwinge Beendigung von: $($StillRunning.Name -join ', ')"
+        Write-Log "Force-closing: $($StillRunning.Name -join ', ')"
         $StillRunning | Stop-Process -Force -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 2
     }
-    Write-Log "Office-Apps geschlossen."
+    Write-Log "Office apps closed."
 } else {
-    Write-Log "Keine Office-Apps geoeffnet."
+    Write-Log "No Office apps running."
 }
 
 # --- 1. Office MRU / Recent Files Cache ---
@@ -97,27 +97,27 @@ foreach ($path in $OfficePaths) {
     if (Test-Path $path) {
         $count = (Get-ChildItem -Path $path -File -ErrorAction SilentlyContinue).Count
         Remove-Item -Path "$path\*" -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Log "Bereinigt: $path ($count Dateien)"
+        Write-Log "Cleaned: $path ($count files)"
     } else {
-        Write-Log "Nicht vorhanden (uebersprungen): $path"
+        Write-Log "Not found (skipped): $path"
     }
 }
 
-# --- 2. Office File Cache (lokaler Cache fuer Cloud-Dokumente) ---
+# --- 2. Office File Cache (local cache for cloud documents) ---
 $OfficeFileCache = "$env:LOCALAPPDATA\Microsoft\Office\16.0\OfficeFileCache"
 if (Test-Path $OfficeFileCache) {
     $count = (Get-ChildItem -Path $OfficeFileCache -File -Recurse -ErrorAction SilentlyContinue).Count
     Remove-Item -Path "$OfficeFileCache\*" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Log "Bereinigt: $OfficeFileCache ($count Dateien)"
+    Write-Log "Cleaned: $OfficeFileCache ($count files)"
 } else {
-    Write-Log "Nicht vorhanden (uebersprungen): $OfficeFileCache"
+    Write-Log "Not found (skipped): $OfficeFileCache"
 }
 
 # --- 3. Office Upload Center Cache ---
 $UploadCenter = "$env:LOCALAPPDATA\Microsoft\Office\16.0\OfficeUploadCenter"
 if (Test-Path $UploadCenter) {
     Remove-Item -Path "$UploadCenter\*" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Log "Bereinigt: $UploadCenter"
+    Write-Log "Cleaned: $UploadCenter"
 }
 
 # --- 4. Windows Jump Lists (Pinned + Recent in Taskbar/Explorer) ---
@@ -130,55 +130,52 @@ foreach ($path in $JumpListPaths) {
     if (Test-Path $path) {
         $count = (Get-ChildItem -Path $path -File -ErrorAction SilentlyContinue).Count
         Remove-Item -Path "$path\*" -Force -ErrorAction SilentlyContinue
-        Write-Log "Bereinigt: $path ($count Dateien)"
+        Write-Log "Cleaned: $path ($count files)"
     }
 }
 
-# --- 5. Registry: Office MRU Eintraege ---
+# --- 5. Registry: Office MRU entries ---
 $OfficeApps = @("Word", "Excel", "PowerPoint", "Access", "Publisher")
 $MRUBasePath = "HKCU:\Software\Microsoft\Office\16.0"
 
 foreach ($app in $OfficeApps) {
-    # File MRU
     $mruPath = "$MRUBasePath\$app\File MRU"
     if (Test-Path $mruPath) {
         Remove-Item -Path $mruPath -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Log "Registry bereinigt: $mruPath"
+        Write-Log "Registry cleaned: $mruPath"
     }
 
-    # Place MRU (Ordner-Favoriten)
     $placeMru = "$MRUBasePath\$app\Place MRU"
     if (Test-Path $placeMru) {
         Remove-Item -Path $placeMru -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Log "Registry bereinigt: $placeMru"
+        Write-Log "Registry cleaned: $placeMru"
     }
 
-    # User MRU (Cloud-basierte MRU)
     $userMru = "$MRUBasePath\$app\User MRU"
     if (Test-Path $userMru) {
         Remove-Item -Path $userMru -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Log "Registry bereinigt: $userMru"
+        Write-Log "Registry cleaned: $userMru"
     }
 }
 
-# --- 6. Office Roaming-Daten fuer MRU ---
+# --- 6. Office Roaming data for MRU ---
 $RoamingPath = "$MRUBasePath\Common\Roaming"
 if (Test-Path $RoamingPath) {
     Remove-Item -Path $RoamingPath -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Log "Registry bereinigt: $RoamingPath"
+    Write-Log "Registry cleaned: $RoamingPath"
 }
 
-# --- Detection-Marker setzen (fuer Intune) ---
+# --- Detection marker (for Intune) ---
 $DetectionKey = "HKCU:\SOFTWARE\EIFER\OfficeCacheCleaner"
 if (-not (Test-Path $DetectionKey)) {
     New-Item -Path $DetectionKey -Force | Out-Null
 }
 Set-ItemProperty -Path $DetectionKey -Name "LastRun" -Value (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 Set-ItemProperty -Path $DetectionKey -Name "Version" -Value "1.0"
-Write-Log "Detection-Marker gesetzt: $DetectionKey"
+Write-Log "Detection marker set: $DetectionKey"
 
-Write-Log "=== Office Cache Cleaner abgeschlossen ==="
+Write-Log "=== Office Cache Cleaner completed ==="
 
-Show-Toast -Title "EIFER Office Cache Cleaner" -Message "Office-Cache wurde erfolgreich bereinigt. Bitte starten Sie Ihre Office-Anwendungen neu."
+Show-Toast -Title "EIFER Office Cache Cleaner" -Message "Office cache has been cleared successfully. Please restart your Office applications."
 
 exit 0
