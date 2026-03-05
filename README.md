@@ -6,7 +6,26 @@
 
 PowerShell script to clear the Microsoft 365 Office cache. Fixes issues with pinning documents in Word, Excel, Explorer, etc.
 
-## What gets cleaned?
+## What does this tool do?
+
+This tool resets the Office "memory" of recently used and pinned files. After running it, Office apps behave as if opened for the first time regarding file history.
+
+**What the user will notice:**
+- The **"Recent Documents"** list in Word, Excel, PowerPoint etc. will be empty
+- **Pinned documents** in Office apps will be removed (can be re-pinned afterwards)
+- **Jump Lists** (right-click on taskbar icons) will be cleared
+- The **"Recent files"** section in File Explorer will be reset
+- **No documents, files, or personal data are deleted** - only the shortcuts/references to them
+
+**What is NOT affected:**
+- All actual files and documents remain untouched
+- OneDrive / SharePoint sync is not affected
+- Outlook emails, calendar, and contacts are not affected
+- Office settings, templates, and add-ins remain unchanged
+
+**Important:** The script will automatically close all running Office apps (Word, Excel, PowerPoint, Outlook, OneNote, Access, Publisher) before cleaning. Users should save their work beforehand.
+
+## Technical details
 
 | Area | Path / Location |
 |------|----------------|
@@ -18,8 +37,6 @@ PowerShell script to clear the Microsoft 365 Office cache. Fixes issues with pin
 | Registry Place MRU | `HKCU:\Software\Microsoft\Office\16.0\<App>\Place MRU` |
 | Registry User MRU | `HKCU:\Software\Microsoft\Office\16.0\<App>\User MRU` |
 | Registry Roaming | `HKCU:\Software\Microsoft\Office\16.0\Common\Roaming` |
-
-**Note:** The script automatically closes running Office apps before cleaning.
 
 ## Manual execution
 
